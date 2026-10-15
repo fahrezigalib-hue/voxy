@@ -1,0 +1,37 @@
+name: Build Voxy JAR
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Setup Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+          cache-cleanup: never
+
+      - name: Fix AccessWidener and Build JAR
+        run: |
+          sed -i '/blaze3d\/opengl/d' src/main/resources/voxy.accesswidener || true
+          chmod +x gradlew
+          ./gradlew build
+
+      - name: Upload Voxy JAR Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: voxy-26.3-jar
+          path: build/libs/*.jar
